@@ -1,0 +1,33 @@
+{%extends 'base.html'%}
+{%block main%}
+<div class="onep box-shadow">
+    <div class="onep_image"> 
+        <img src="{{url_for('get_image', filename=one_property.photo)}}">
+    </div>
+    <div class="onep_info">
+        <h2>{{one_property.title}}</h2>
+        <div>
+            <p class="prop-price price">${{one_property.price}}</p>
+            <p class="prop-price prop_type">{{one_property.prop_type}}</p>
+        </div>
+        <p>{{one_property.description}}</p>
+        <div class="room_shower">
+            <span class="room_show">
+                <img src="{{url_for('static',filename='bed-icon.png')}}">
+                <p>{{one_property.num_bedrooms}} Bedrooms</p>
+            </span>
+            <span class="room_show">
+                <img src="{{url_for('static',filename='shower-icon.png')}}">
+                <p>{{one_property.num_bathrooms}} Bathrooms</p>
+            </span>
+        </div>
+        <div class="location">
+            <img src="{{url_for('static', filename='location-icon.png')}}">
+            <p>{{one_property.location}}</p>
+        </div>
+        
+        <button class="btn btn-success">Email Realtor</button>
+    </div>
+    
+</div>
+{%endblock%}

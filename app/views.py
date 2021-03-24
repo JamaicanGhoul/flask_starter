@@ -5,9 +5,12 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 
-from app import app
-from flask import render_template, request, redirect, url_for
-
+import os
+from app import app, db
+from flask import render_template, flash, request, redirect, url_for, send_from_directory
+from .forms import NewPropertyForm
+from app.models import PropertyProfile
+from werkzeug.utils import secure_filename
 
 ###
 # Routing for your application.
@@ -22,9 +25,47 @@ def home():
 @app.route('/about/')
 def about():
     """Render the website's about page."""
-    return render_template('about.html', name="Mary Jane")
+    return render_template('about.html', name="Jamar Lee")
+
+@app.route('/property', methods=["GET", "POST"])
+def create_new_property():
+
+    form=NewPropertyForm()
+    if request.method=='POST' and form.validate_on_submit():
+        title = request.form['title']
+        num_bedrooms = request.form['num_bedrooms']
+        num_bathrooms = request.form['num_bathrooms']
+        location = request.form['location']
+        price = request.form['price']
+        prop_type = request.form['prop_type']
+        description = request.form['description']
+        filename = save_photos(form.photo.data) 
+        prop = PropertyProfile(title, description, num_bedrooms, num_bathrooms, price, prop_type, location, filename)
+        db.session.add(prop)
+        db.session.commit()
+        return redirect(url_for('show_properties'))
+    return render_template('create_new_property.html', form=form)
+
+@app.route('/properties', methods=["GET"])
+def show_properties():
+    properties=db.session.query(PropertyProfile).all()
+    return render_template('show_properties.html', properties=properties)
 
 
+@app.route('/property/<propertyid>', methods=["GET"])
+def show_property(propertyid):
+    one_property = db.session.query(PropertyProfile).filter(PropertyProfile.id == propertyid).first()
+    return render_template('show_propertyid.html', one_property=one_property)
+
+def save_photos(photo):
+    filename = secure_filename(photo.filename)
+    photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return filename
+
+@app.route('/get_image/<filename>')
+def get_image(filename):
+    root_dir = os.getcwd()
+    return send_from_directory(os.path.join(root_dir, app.config['UPLOAD_FOLDER']), filename)
 ###
 # The functions below should be applicable to all Flask apps.
 ###
